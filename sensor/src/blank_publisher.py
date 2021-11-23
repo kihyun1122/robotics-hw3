@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 import rospy
 from common_msgs.msg import blank
+from common_msgs.srv import Coord2Goal, Coord2GoalRequest
 
 rospy.init_node('blank_publisher')
 pub = rospy.Publisher('custom_msg', blank, queue_size=1)
 
+coord_requester = rospy.ServiceProxy('coord_to_goal', Coord2Goal)
+
 rate = rospy.Rate(2)
 count = 0
+coord_count = 0
 pub_color = blank()
 color_list = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 coordinator_list = [(100, 200, 300), (15, 1, 30), (1993, 11, 22)]
@@ -37,5 +41,16 @@ while not rospy.is_shutdown():
     print "published data for New_g : %d" % pub_color.int_data.data
     print ""
     print "Pub finished"
+    print ""
+
+    coord_count += 1
+    if coord_count % 5 == 0:
+        #print "coord_count : ", coord_count
+        if coord_count > 150:
+            coord_count = 0
+        req = Coord2GoalRequest(x_re=coord_count, y_re=coord_count*2, z_re=coord_count)
+        res = coord_requester(req)
+        print "Moved  coordinates : x: ", req.x_re, " y: ", req.y_re, " z: ", req.z_re
+        print "Remain coordinates : x: ", res.x, " y: ", res.y, " z: ", res.z
     rate.sleep()
 
